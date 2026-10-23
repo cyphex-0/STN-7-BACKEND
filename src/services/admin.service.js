@@ -172,6 +172,7 @@ const getAnalytics = async () => {
   return {
     chartData,
     enrollmentsByCourse,
+    topCourses: enrollmentsByCourse,
     stats: {
       totalEnrollments,
       totalCourses,
