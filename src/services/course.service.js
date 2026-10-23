@@ -18,10 +18,11 @@ const getCourses = async (query) => {
 
   const filter = {};
 
-  if (search && typeof search === "string") {
+  if (search && typeof search === "string" && search.trim() !== "") {
+    const sanitizedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     filter.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { instructorName: { $regex: search, $options: "i" } },
+      { title: { $regex: sanitizedSearch, $options: "i" } },
+      { instructorName: { $regex: sanitizedSearch, $options: "i" } },
     ];
   }
 
