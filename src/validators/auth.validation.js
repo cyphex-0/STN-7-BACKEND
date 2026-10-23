@@ -7,6 +7,7 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   adminKey: z.string().optional(), // Optional admin registration key
+  role: z.enum(["student", "admin"]).optional(),
 });
 
 const loginSchema = z.object({
