@@ -46,6 +46,12 @@ const login = async ({ email, password }) => {
   const match = await bcrypt.compare(password, user.passwordHash);
   if (!match) throw new Error("Invalid email or password");
 
+  if (user.isBanned) {
+    const error = new Error("Account suspended. Please contact support.");
+    error.statusCode = 403;
+    throw error;
+  }
+
   const token = generateToken({ id: user._id, role: user.role });
 
   return {
@@ -57,6 +63,11 @@ const login = async ({ email, password }) => {
 const getMe = async (userId) => {
   const user = await User.findById(userId).select("-passwordHash");
   if (!user) throw new Error("User not found");
+  if (user.isBanned) {
+    const error = new Error("Account suspended. Please contact support.");
+    error.statusCode = 403;
+    throw error;
+  }
   return user;
 };
 
