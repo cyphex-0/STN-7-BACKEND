@@ -47,6 +47,19 @@ const completeLesson = async (enrollId, lessonId) => {
   const enrollment = await Enrollment.findById(enrollId);
   if (!enrollment) throw new Error("Enrollment not found");
 
+  const course = await Course.findById(enrollment.course);
+  if (!course) throw new Error("Course not found");
+
+  // Validate that lessonId belongs to the course syllabus
+  const allLessonIds = (course.syllabus || []).flatMap((mod) =>
+    (mod.lessons || []).map((les) => String(les._id))
+  );
+
+  const isValidLesson = allLessonIds.includes(String(lessonId));
+  if (!isValidLesson) {
+    throw new Error("Lesson does not belong to this course syllabus");
+  }
+
   // avoid duplicates
   const alreadyDone = enrollment.progress.completedLessons
     .map(String)
@@ -56,16 +69,14 @@ const completeLesson = async (enrollId, lessonId) => {
     enrollment.progress.completedLessons.push(lessonId);
   }
 
-  // calculate percent
-  const course = await Course.findById(enrollment.course);
-  const totalLessons = course.syllabus.reduce(
-    (sum, mod) => sum + mod.lessons.length,
-    0
-  );
+  // calculate percent, counting only valid syllabus lessons and capping at 100%
+  const validCompletedCount = enrollment.progress.completedLessons.filter((id) =>
+    allLessonIds.includes(String(id))
+  ).length;
 
-  const completed = enrollment.progress.completedLessons.length;
+  const totalLessons = allLessonIds.length;
   enrollment.progress.percent =
-    totalLessons === 0 ? 0 : Math.round((completed / totalLessons) * 100);
+    totalLessons === 0 ? 0 : Math.min(100, Math.round((validCompletedCount / totalLessons) * 100));
 
   await enrollment.save();
   return enrollment;
