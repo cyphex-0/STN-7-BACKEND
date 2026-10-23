@@ -10,7 +10,11 @@ const userSchema = new Schema(
     role: { type: String, enum: ["student", "admin"], default: "student" },
     isBanned: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 module.exports = model("User", userSchema);

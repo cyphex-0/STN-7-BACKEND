@@ -34,7 +34,14 @@ const register = async ({ name, email, password, role, adminKey }) => {
 
   return {
     token,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isBanned: user.isBanned,
+    },
   };
 };
 
@@ -56,7 +63,14 @@ const login = async ({ email, password }) => {
 
   return {
     token,
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isBanned: user.isBanned,
+    },
   };
 };
 
@@ -68,7 +82,12 @@ const getMe = async (userId) => {
     error.statusCode = 403;
     throw error;
   }
-  return user;
+  const userObj = user.toObject ? user.toObject({ virtuals: true }) : { ...user };
+  return {
+    ...userObj,
+    id: user._id,
+    _id: user._id,
+  };
 };
 
 module.exports = { register, login, getMe };
