@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Enrollment = require("../models/Enrollment");
 const Course = require("../models/Course");
 
@@ -15,11 +16,21 @@ const enrollCourse = async (studentId, courseId, batchId = null) => {
     throw new Error("Already enrolled in this course");
   }
 
+  // Validate and resolve batchId safely
+  let validBatchId = null;
+  if (batchId !== null && batchId !== undefined && batchId !== "") {
+    if (mongoose.Types.ObjectId.isValid(batchId)) {
+      validBatchId = batchId;
+    } else if (course.batches && !isNaN(batchId) && course.batches[Number(batchId)]) {
+      validBatchId = course.batches[Number(batchId)]._id || null;
+    }
+  }
+
   // Create new enrollment
   enrollment = await Enrollment.create({
     student: studentId,
     course: courseId,
-    batchId,
+    batchId: validBatchId,
     progress: { completedLessons: [], percent: 0 },
   });
 

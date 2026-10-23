@@ -28,6 +28,14 @@ const moduleSchema = new Schema(
   { _id: true }
 );
 
+const batchSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    startDate: { type: Date },
+  },
+  { _id: true }
+);
+
 const courseSchema = new Schema(
   {
     title: { type: String, required: true, index: true },
@@ -37,12 +45,7 @@ const courseSchema = new Schema(
     category: { type: String, index: true },
     tags: [{ type: String, index: true }],
     syllabus: [moduleSchema],
-    batches: [
-      {
-        name: String,
-        startDate: Date,
-      },
-    ],
+    batches: [batchSchema],
   },
   { timestamps: true }
 );
