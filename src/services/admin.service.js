@@ -30,10 +30,12 @@ const getEnrollments = async (query) => {
   if (courseId) filter.course = courseId;
   if (batchId) filter.batchId = batchId;
 
-  return Enrollment.find(filter)
+  const enrollments = await Enrollment.find(filter)
     .populate("student", "name email")
     .populate("course", "title instructorName")
     .sort({ createdAt: -1 });
+
+  return enrollments.filter((e) => e.student != null);
 };
 
 // ✅ NEW: get all assignment submissions
@@ -48,8 +50,10 @@ const getAssignments = async (query = {}) => {
     .populate("reviewer", "name")
     .sort({ createdAt: -1 });
 
+  const validSubmissions = submissions.filter((sub) => sub.student != null);
+
   // Add lesson title to each submission
-  const submissionsWithLessonTitle = submissions.map((sub) => {
+  const submissionsWithLessonTitle = validSubmissions.map((sub) => {
     const submissionObj = sub.toObject();
     let lessonTitle = "Unknown Lesson";
 
