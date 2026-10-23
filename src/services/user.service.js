@@ -1,4 +1,7 @@
 const User = require("../models/User");
+const Enrollment = require("../models/Enrollment");
+const AssignmentSubmission = require("../models/AssignmentSubmission");
+const QuizSubmission = require("../models/QuizSubmission");
 
 const getAllUsers = async () => {
   return User.find().select("-passwordHash").sort({ createdAt: -1 });
@@ -7,7 +10,16 @@ const getAllUsers = async () => {
 const deleteUser = async (userId) => {
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
-  await User.findByIdAndDelete(userId);
+
+  // Cascading cleanup of all associated student records
+  await Promise.all([
+    User.findByIdAndDelete(userId),
+    Enrollment.deleteMany({ student: userId }),
+    AssignmentSubmission.deleteMany({ student: userId }),
+    QuizSubmission.deleteMany({ student: userId }),
+    AssignmentSubmission.updateMany({ reviewer: userId }, { $unset: { reviewer: "" } }),
+  ]);
+
   return { message: "User deleted successfully" };
 };
 
